@@ -2,9 +2,9 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getFunctions } from "firebase/functions";
-import firebaseConfig from "../firebase-applet-config.json";
+import firebaseConfig from '../firebase-applet-config.json';
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId); // Force exact database id provided by configuration
 export const auth = getAuth(app);
 export const functions = getFunctions(app);

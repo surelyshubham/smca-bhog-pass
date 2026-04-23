@@ -65,13 +65,17 @@ export function ScannerComponent() {
     } catch (e: any) {
       setScanResult({ success: false, message: e.message || "Scan failed" });
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate([200, 100, 200]); // Error haptic pattern
+        navigator.vibrate(200); // Standard vibration pattern
       }
     }
     
     // 1.5-second UI freeze before resuming
     setTimeout(() => {
-      setScanResult(null);
+      setScanResult(current => {
+        // Don't clear permission errors automatically
+        if (current?.message.includes("Camera access blocked")) return current;
+        return null;
+      });
       setIsProcessing(false);
       isProcessingRef.current = false;
     }, 1500);
@@ -87,10 +91,20 @@ export function ScannerComponent() {
     }
 
     // Initialize scanner
-    html5QrCode.current = new Html5Qrcode("reader", { formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE] });
+    html5QrCode.current = new Html5Qrcode("reader", { 
+       formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+       verbose: false
+    });
 
     const startScanner = async () => {
       try {
+        if (html5QrCode.current?.isScanning) return;
+        
+        // Explicitly check for constraints first to trigger prompt
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+           await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        }
+        
         await html5QrCode.current?.start(
           { facingMode: "environment" },
           {
@@ -104,8 +118,22 @@ export function ScannerComponent() {
              // Ignoring frequent error messages from empty frames
           }
         );
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to start scanner", err);
+        // Ignore "already under transition" errors that happen when hot-reloading
+        if (String(err).includes("already under transition")) return;
+        
+        if (err?.name === "NotAllowedError" || String(err).includes("NotAllowedError") || String(err).includes("Permission denied")) {
+          setScanResult({
+            success: false,
+            message: "Camera access blocked. Please click 'Open in new tab' (top right) or allow camera permissions in your browser.",
+          });
+        } else {
+           setScanResult({
+            success: false,
+            message: "Failed to access camera. Device may not support it or it's currently in use.",
+          });
+        }
       }
     };
 
