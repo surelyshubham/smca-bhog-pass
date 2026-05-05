@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import { doc, runTransaction } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { getDb } from "@/lib/firebase";
+const db = getDb();
 import { useAuth } from "@/components/AuthProvider";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2, Ticket } from "lucide-react";
@@ -35,9 +36,9 @@ export function ScannerComponent() {
     }
     
     try {
-      const couponRef = doc(db, "coupons", qrText);
+      const couponRef = doc(db!, "coupons", qrText);
       
-      await runTransaction(db, async (transaction) => {
+      await runTransaction(db!, async (transaction) => {
         const couponDoc = await transaction.get(couponRef);
         
         if (!couponDoc.exists()) {

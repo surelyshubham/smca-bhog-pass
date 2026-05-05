@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 import { collection, addDoc, query, where, getDocs, orderBy, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { getDb } from "@/lib/firebase";
+const db = getDb();
 import { toast } from "sonner";
 import { Loader2, IndianRupee, Save } from "lucide-react";
 import { Payment } from "@/lib/types";
@@ -28,7 +29,7 @@ export default function AccountantPage() {
     const loadRecent = async () => {
       try {
         const q = query(
-          collection(db, "payments"), 
+          collection(db!, "payments"), 
           where("collectorUid", "==", user.uid)
         );
         const snapshot = await getDocs(q);
@@ -63,7 +64,7 @@ export default function AccountantPage() {
         timestamp: new Date().toISOString()
       };
 
-      await addDoc(collection(db, "payments"), paymentData);
+      await addDoc(collection(db!, "payments"), paymentData);
       toast.success("Payment recorded successfully.");
       setRecentPayments([paymentData, ...recentPayments].slice(0, 5));
       setAmount("");

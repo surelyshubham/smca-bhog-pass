@@ -11,7 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { getDb } from "@/lib/firebase";
+const db = getDb();
 import { toast } from "sonner";
 import { Loader2, QrCode } from "lucide-react";
 
@@ -29,7 +30,7 @@ export default function ScannerPage() {
     setIsSubmitting(true);
     try {
       // Find active event
-      const eventsRef = collection(db, "events");
+      const eventsRef = collection(db!, "events");
       const q = query(eventsRef, where("isActive", "==", true));
       const activeEvents = await getDocs(q);
 
@@ -49,7 +50,7 @@ export default function ScannerPage() {
         ...(guestNotes && { notes: guestNotes })
       };
 
-      const docRef = await addDoc(collection(db, "coupons"), couponData);
+      const docRef = await addDoc(collection(db!, "coupons"), couponData);
       toast.success(`Guest pass created for ${guestName}`);
       
       // Optionally provide a link to view the pass

@@ -9,7 +9,8 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
 } from "@tanstack/react-table";
-import { db } from "@/lib/firebase";
+import { getDb } from "@/lib/firebase";
+const db = getDb();
 import { doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { Member } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,7 @@ export function MemberTable({ data, onRefresh }: { data: (Member & { id: string 
 
   const handleSave = useMemo(() => async (id: string) => {
     try {
-      await updateDoc(doc(db, "members", id), editValues as any);
+      await updateDoc(doc(db!, "members", id), editValues as any);
       toast.success("Member updated");
       setEditingRow(null);
       onRefresh();
@@ -43,7 +44,7 @@ export function MemberTable({ data, onRefresh }: { data: (Member & { id: string 
     console.log("Delete attempt for:", id);
     if (!confirm("Are you sure you want to delete this member?")) return;
     try {
-      await deleteDoc(doc(db, "members", id));
+      await deleteDoc(doc(db!, "members", id));
       console.log("Firestore delete successful");
       toast.success("Member deleted");
       onRefresh();

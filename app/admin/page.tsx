@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { db } from "@/lib/firebase";
+import { getDb } from "@/lib/firebase";
+const db = getDb();
 import { collection, addDoc, getDocs, query, where, onSnapshot } from "firebase/firestore";
 import { Loader2, Plus, Calendar, Users, Mail, Phone, Users2, Download, Upload, FileSpreadsheet } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
@@ -54,7 +55,7 @@ export default function AdminPage() {
     loadMembers();
 
     // Setup live subscription for event stats (issued vs scanned)
-    const unsubscribeCoupons = onSnapshot(collection(db, "coupons"), (snapshot) => {
+    const unsubscribeCoupons = onSnapshot(collection(db!, "coupons"), (snapshot) => {
       const stats: Record<string, { issued: number, scanned: number }> = {};
       snapshot.docs.forEach(doc => {
         const data = doc.data() as Coupon;
@@ -85,7 +86,7 @@ export default function AdminPage() {
 
   const loadEvents = async () => {
     try {
-       const q = query(collection(db, "events"));
+       const q = query(collection(db!, "events"));
        const snapshot = await getDocs(q);
        const evts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as (Event & {id: string})));
        // Sort by date newest first
@@ -97,7 +98,7 @@ export default function AdminPage() {
 
   const loadMembers = async () => {
     try {
-       const q = query(collection(db, "members"));
+       const q = query(collection(db!, "members"));
        const snapshot = await getDocs(q);
        const mems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as (Member & {id: string})));
        setMembers(mems);
@@ -123,11 +124,11 @@ export default function AdminPage() {
         ...(eventNotes && { notes: eventNotes })
       };
       
-      const docRef = await addDoc(collection(db, "events"), newEvent);
+      const docRef = await addDoc(collection(db!, "events"), newEvent);
       const newEventId = docRef.id;
       toast.info("Event active! Generating designated QR passes...");
       
-      const membersSnap = await getDocs(collection(db, "members"));
+      const membersSnap = await getDocs(collection(db!, "members"));
       let passCount = 0;
       let emailCount = 0;
 
@@ -161,7 +162,7 @@ export default function AdminPage() {
               source: "member",
            };
 
-           const p = addDoc(collection(db, "coupons"), couponData).then(ref => ({
+           const p = addDoc(collection(db!, "coupons"), couponData).then(ref => ({
              id: ref.id,
              label: passHolder,
              url: `${window.location.origin}/pass/${ref.id}`
@@ -229,7 +230,7 @@ export default function AdminPage() {
          ...(childrenCount > 0 && { childrenNames: childrenNames.slice(0, childrenCount).map(n => n.trim()) })
        };
        
-       await addDoc(collection(db, "members"), newMember);
+       await addDoc(collection(db!, "members"), newMember);
        toast.success("Member securely added to directory!");
        
        setMembershipId("");
@@ -349,7 +350,7 @@ export default function AdminPage() {
               email: email.toString()
             };
 
-            await addDoc(collection(db, "members"), newMember);
+            await addDoc(collection(db!, "members"), newMember);
             successCount++;
           }
 

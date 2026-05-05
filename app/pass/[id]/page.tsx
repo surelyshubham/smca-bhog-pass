@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { getDb } from "@/lib/firebase";
+const db = getDb();
 import { Coupon, Event } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Calendar, MapPin, Tag } from "lucide-react";
@@ -21,7 +22,7 @@ export default function PassPage() {
     
     async function loadData() {
       try {
-        const couponRef = doc(db, "coupons", id as string);
+        const couponRef = doc(db!, "coupons", id as string);
         const couponSnap = await getDoc(couponRef);
         
         if (!couponSnap.exists()) {
@@ -33,7 +34,7 @@ export default function PassPage() {
         const couponData = couponSnap.data() as Coupon;
         setCoupon(couponData);
         
-        const eventRef = doc(db, "events", couponData.eventId);
+        const eventRef = doc(db!, "events", couponData.eventId);
         const eventSnap = await getDoc(eventRef);
         
         if (eventSnap.exists()) {

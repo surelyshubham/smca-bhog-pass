@@ -3,7 +3,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User as FirebaseUser, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { getDb, auth } from "@/lib/firebase";
+const db = getDb();
 import { User } from "@/lib/types";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -29,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(currUser);
       if (currUser) {
         try {
-          const userDoc = await getDoc(doc(db, "users", currUser.uid));
+          const userDoc = await getDoc(doc(db!, "users", currUser.uid));
           if (userDoc.exists()) {
             setRoleData({ uid: currUser.uid, ...userDoc.data() } as User);
           } else {
